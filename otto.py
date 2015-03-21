@@ -16,6 +16,7 @@ def loadData(filename):
     fin.close()
     return data[1:]
 
+
 def read_csv(filename):
     """Reads in a csv file and returns a table as a list of lists"""
     the_file = open(filename)
@@ -26,12 +27,14 @@ def read_csv(filename):
             table.append(row)
     return table
 
+
 def print_csv(table):
     """Prints a csv file from a table as a list of lists (rows)"""
     for row in table:
         for i in range(len(row) - 1):
             sys.stdout.write(str(row[i]) + ',')
         print row[-1]
+
 
 def getFeatureNames(filename):
     "Return a list of feature names"
@@ -43,7 +46,7 @@ def getFeatureNames(filename):
 
 
 def getLabels(data):
-    "Returns a list of actual training/test data labels"
+    "Returns a list of actual training data labels"
     labels = []
     i = 0
     for datum in data:
@@ -75,9 +78,19 @@ def getDataSet(data, featureNames, labels):
     return dataSet 
 
 
+def getTestData(data, featureNames):
+    dataSet = []
+    idx = 0
+    for datum in data:
+        dataSet.append((extractFeatures(featureNames, datum), "N/A"))
+        idx+=1
+    return dataSet 
+
+
 def length_of_table(table):
     """Returns the count of instances in a table"""
     return len(table)
+
 
 def count_dups(table):
     """Counts duplicates in a given table"""
@@ -86,6 +99,7 @@ def count_dups(table):
         if table.count(row) > 1:
             count+=1
     return count
+
     
 def print_count_csv_dups(table):
     """Prints a csv with a count at the beginning of duplicate rows"""
@@ -96,6 +110,7 @@ def print_count_csv_dups(table):
         for i in range(len(row) - 1):
             sys.stdout.write(str(row[i]) + ',')
         print row[-1]
+
 
 def print_csv_summary(filename):
     """Prints the length and count of duplicates in a csv file"""
@@ -123,6 +138,7 @@ def twod_list(w, h):
         new = []
     return twod_list
 
+
 def oned_list(l):
     """ Creates a one dimentional list with specified length"""
     oned_list = []
@@ -133,10 +149,12 @@ def oned_list(l):
         new = []
     return oned_list
 
+
 def wait():
     "Waits for user input"
     print "\n"
     raw_input("Press Enter to continue...")
+
 
 def holdout_partition(table):
     "Creates Holdout Partitions"
@@ -148,6 +166,7 @@ def holdout_partition(table):
     n0 = (n*2)/3
     return randomized[0:n0],randomized[n0:]
 
+
 def randomDraw(number,dataTable):
     ''' draws n number of instances from data.txt at random '''
     i = 0
@@ -158,6 +177,7 @@ def randomDraw(number,dataTable):
         rand_Instances.append(data[random.randint(0, max_Val -1 )])
         i = i +1
     return rand_Instances
+
     
 def kfold_partition(table,k):
     "Creates k roughly equal parts"
@@ -180,6 +200,7 @@ def kfold_partition(table,k):
         folds.append(temp)
         i = i+1
     return folds
+
     
 def getknn(k, table, columns, columnToPredict,weighted,filename):
     instances = randomDraw(k, str(filename))
@@ -223,6 +244,7 @@ def getknn(k, table, columns, columnToPredict,weighted,filename):
     accuracy =(TP+TN)/(count * 1.0)
     return accuracy
 
+
 def majorityVote(predictions,attr):
     votes = []
     for a in attr:
@@ -236,6 +258,7 @@ def majorityVote(predictions,attr):
                 index = index + 1                
     index = predictions.index(max(predictions))
     return(attr.pop(index))
+
     
 def getNearestNeighbors(k, instance, columns, dataTable,weighted):
     nearest = []
@@ -256,9 +279,11 @@ def orderByNearestNeighbor(instance, columns, dataTable,weighted):
             distances.append(getWeightedDistance(instance, row, columns,dataTable))
     return [x for (y,x) in sorted(zip(distances,dataTable))]
 
+
 def quickBullshitFix(row):
     """remove later"""
     print "this does nothing"
+
         
 def is_number(s):
     try:
@@ -274,6 +299,7 @@ def is_number(s):
     except (TypeError, ValueError):
         pass
     return False
+
     
 def getDistance(x1, x2, columns,table):
     if x1 == x2:
@@ -291,9 +317,9 @@ def getDistance(x1, x2, columns,table):
                 totalVals = []
                 for row in table:
                    totalVals.append(row[i])
-                sumSqr += ((float(x1[i]) - float(x2[i])) ** 2)/(float(max.totalVals-min.totalVals))
-            
+                sumSqr += ((float(x1[i]) - float(x2[i])) ** 2)/(float(max.totalVals-min.totalVals))     
     return sumSqr
+
 
 def regularKNN(repeats,k, table, columns, columnToPredict,weighted,filename):
     """ Repeats KNN a number of times and its average accuracy avg"""    
@@ -301,33 +327,190 @@ def regularKNN(repeats,k, table, columns, columnToPredict,weighted,filename):
     a = a+ getknn(k, table, columns, columnToPredict,weighted,filename)
     return( a/(repeats*1.0))
 
+
+def crossProduct(dict1, dict2):
+    """Returns the value of the cross product of two dictionaries"""
+    total = 0
+    if len(dict1) > len(dict2):
+        dict1,dict2 = dict2,dict1
+    for key in dict1:
+        if key not in dict2:
+            continue
+        total += dict1[key] * dict2[key]
+    return total
+
+
+def dictAdd(dict1, dict2 ,i):
+        """Goes through each key and sums the values for that key from two dictionaries"""
+        newDict = {}
+        for key in dict1:
+            if key in dict2:
+                newDict[key] = dict1[key] + dict2[key]
+            else:
+                newDict[key] = dict1[key]
+        for key in dict2:
+            if key in dict1:
+                continue
+            newDict[key] = dict2[key]
+        return newDict
+
+
+def dictSubtract(dict1, dict2, i):
+        """Goes through the key and subtracts the values for that key from two dictionaries"""
+        newDict = {}
+        for key in dict1:
+            if key in dict2:
+                newDict[key] = dict1[key] - dict2[key]
+            else:
+                addend[key] = dict1[key]
+        for key in dict2:
+            if key in dict1:
+                continue
+            newDict[key] = -1 * dict2[key]
+        return newDict
+
+
+def dataToInts(testDataSet):
+    for i in range(len(testDataSet)):
+        data = testDataSet[i][0]
+        for key in data:
+            data[key] = int(data[key])
+
+
+def argMax(dictionary):
+    """Returns the key from a dictionary with the highest value"""
+    if len(dictionary.keys()) == 0: return None
+    items = dictionary.items()
+    values = [x[1] for x in items]
+    maxIndex = values.index(max(values))
+    return items[maxIndex][0]
+
+
+def trainPerceptron(validLabels, iterations, trainingDataSet, featureNames):
+    """Use the training data to get set values for the training weight vectors"""
+    #Set weights to zero initially
+    weights = {}
+    for label in validLabels:
+        weights[label] = {}
+        for feat in featureNames:
+            weights[label][feat] = 0
+
+    #Train for the specified number of iterations and update weight vector
+    trainingData = trainingDataSet
+    for iteration in range(iterations):
+        print "Starting iteration ", iteration, "..."
+        random.shuffle(trainingData)
+        for i in range(len(trainingData)):
+            true_label = trainingData[i][1]
+            data = trainingData[i][0]
+            score = {}
+            for l in validLabels:
+                score[l] = crossProduct(weights[l], data)
+            maxguess = argMax(score)
+            if maxguess != true_label:
+                weights[true_label] = dictAdd(weights[true_label], data, i)
+                weights[maxguess] = dictSubtract(weights[maxguess], data, i)
+    return weights
+
+    
+def classifyPerceptron(data, weights, validLabels):
+    """classifies the data as the label whose weight vector is most similar to the data's vector"""
+    print "Classifying data using the perceptron..."
+    guesses = []
+    for datum in data:
+        vectors = {}
+        for l in validLabels:
+            vectors[l] = crossProduct(weights[l], datum[0])
+        guesses.append(argMax(vectors))
+    return guesses
+
+
+def trainingStats(trainingGuesses, trainingDataSet):
+    i = 0
+    correct = 0.0
+    for datum in trainingDataSet:
+        if datum[1] == trainingGuesses[i]:
+            correct += 1.0
+        i += 1
+    print "Number training correct: ", correct, "       Total: " , 61878
+    print "Percentage of training correct:" , str((correct/61878) *100)+"%"
+
+
+def writeCSV(guesses):
+    """Writes a CSV output file containing the formatted guesses for the test labels"""
+    print "Writing CSV file..."
+    fout = open("classified.csv", 'w')
+    fout.write("id, Class_1, Class_2, Class_3, Class_4, Class_5, Class_6, Class_7, Class_8, Class_9")
+    for i in range(len(guesses)):
+        if guesses[i] == "Class_1":
+            writeString = "\n"+str(i+1)+", 1, 0, 0, 0, 0, 0, 0, 0, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_2":
+            writeString = "\n"+str(i+1)+", 0, 1, 0, 0, 0, 0, 0, 0, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_3":
+            writeString = "\n"+str(i+1)+", 0, 0, 1, 0, 0, 0, 0, 0, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_4":
+            writeString = "\n"+str(i+1)+", 0, 0, 0, 1, 0, 0, 0, 0, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_5":
+            writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 1, 0, 0, 0, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_6":
+            writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 1, 0, 0, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_7":
+            writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 0, 1, 0, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_8":
+            writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 0, 0, 1, 0"
+            fout.write(writeString)
+        elif guesses[i] == "Class_9":
+            writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 0, 0, 0, 1"
+            fout.write(writeString)
+    fout.close()
+        
+
 def classifierOptionsMenu():
     '''Shows options to users'''
-    print "Classified Options"
+    print "\nClassifier Options"
     print "------------------"
-    print "Knn" # add options as we finish features
+    print "Knn, perceptron\n" # add options as we finish features
 
-def runSelectedClassifier(classifier,trainingDataSet,trainingfile):
+
+def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
     """ Runs selcted calssifier"""
-    if classifier == "KNN" or classifier == "knn":
+    featureNames = getFeatureNames("train.csv")
+    validLabels = ['Class_1', 'Class_2', 'Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
+    if classifier.lower() == "knn":
         #TODO present options to user        
         print(regularKNN(5,5,trainingDataSet,oned_list(93),94,"false",trainingfile))
+    elif classifier.lower() == "perceptron" or classifier.lower() == 'p':
+        iterations = int(raw_input("How many iterations should be run?  "))
+        trainingWeights = trainPerceptron(validLabels, iterations, trainingDataSet, featureNames)
+        trainingGuesses = classifyPerceptron(trainingDataSet, trainingWeights, validLabels)
+        trainingStats(trainingGuesses, trainingDataSet)
+        testGuesses = classifyPerceptron(testDataSet, trainingWeights, validLabels)
+        writeCSV(testGuesses)
+
         
 def main():
     "Select classifier to use and classify the data"
     trainingfile = "train.csv"
     testingfile = "test.csv"
-    classifierOptionsMenu
-    classifier = raw_input("Which classifier would you like to use?")
+    featureNames = getFeatureNames("train.csv")
+    classifierOptionsMenu()
+    classifier = raw_input("Which classifier would you like to use?  ")
+    print "Preprocessing data..."
     rawTrainingData = loadData(trainingfile)
     rawTestData = loadData(testingfile)
-    validLabels = ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9']
     actualTrainingLabels = getLabels(rawTrainingData)
-    actualTestLabels = getLabels(rawTestData)
-    featureNames = getFeatureNames("train.csv")
     trainingDataSet = getDataSet(rawTrainingData, featureNames, actualTrainingLabels)
-    testDataSet = getDataSet(rawTestData, featureNames, actualTestLabels)
-    runSelectedClassifier(classifier,trainingDataSet,trainingfile)
+    testDataSet = getTestData(rawTestData, featureNames)
+    dataToInts(testDataSet)
+    dataToInts(trainingDataSet)
+    runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet)
     
     
     
