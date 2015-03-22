@@ -50,39 +50,81 @@ def getLabels(data):
     labels = []
     i = 0
     for datum in data:
-        datumRow = datum.split(',')
-        if len(datumRow) == 95:
-            labels.append(datumRow[94])
+        datumRow = datum
+        if len(datum) == 95:
+            labels.append(datum[94])
     return labels
 
 
-def extractFeatures(featureNames, datum):
+def sumOfFeatures(rawDatum):
+    """Returns the sum of all feature values for a instance of datum"""
+    idx = 1
+    total = 0
+    while idx < 94:
+        total += rawDatum[idx]
+        idx += 1
+    return total
+
+
+def topThreeSum(datum, features):
+    """Adds the categorization of the sum of the three maximum feature values to the feature vector"""
+    total = 0
+    tempDatum = datum
+    for i in range(3):
+        total += max(tempDatum[1:-1])
+        tempDatum.remove(max(tempDatum))
+    #features["topThree"] = total*0.1
+    if total < 25:
+        features['low'] = 1
+        features['lowmid'] = 0
+        features['highmid'] = 0
+        features['high'] = 0
+    elif total < 75:
+        features['low'] = 0
+        features['lowmid'] = 1
+        features['highmid'] = 0
+        features['high'] = 0
+    elif total < 190:
+        features['low'] = 0
+        features['lowmid'] = 0
+        features['highmid'] = 1
+        features['high'] = 0
+    else:
+        features['low'] = 0
+        features['lowmid'] = 0
+        features['highmid'] = 0
+        features['high'] = 1
+
+
+def extractFeatures(featureNames, datum, noBasic):
     "Returns a dictionary of feature, value pairs from a training datum"
     features = {}
     idx = 1
-    datum = datum.split(',')
     for feat in featureNames:
+        if noBasic: break
         features[feat] = datum[idx]
         idx += 1
+    #features["sum"] = sumOfFeatures(datum)
+    topThreeSum(datum, features)
     return features
 
 
-def getDataSet(data, featureNames, labels):
+def getDataSet(data, featureNames, labels, noBasic):
     "Returns a list of (feature vector, label) tuples"
     dataSet = []
     idx = 0
     for datum in data:
         if idx < len(labels):
-            dataSet.append((extractFeatures(featureNames, datum), labels[idx])) 
+            dataSet.append((extractFeatures(featureNames, datum, noBasic), labels[idx])) 
         idx += 1
     return dataSet 
 
 
-def getTestData(data, featureNames):
+def getTestData(data, featureNames, noBasic):
     dataSet = []
     idx = 0
     for datum in data:
-        dataSet.append((extractFeatures(featureNames, datum), "N/A"))
+        dataSet.append((extractFeatures(featureNames, datum, noBasic), "N/A"))
         idx+=1
     return dataSet 
 
@@ -370,11 +412,13 @@ def dictSubtract(dict1, dict2, i):
         return newDict
 
 
-def dataToInts(testDataSet):
-    for i in range(len(testDataSet)):
-        data = testDataSet[i][0]
-        for key in data:
-            data[key] = int(data[key])
+def dataToInt(rawData):
+    for i in range(len(rawData)):
+        rawData[i] = rawData[i].split(',')
+        j = 0
+        while j < 94:
+            rawData[i][j] = int(rawData[i][j])
+            j += 1
 
 
 def argMax(dictionary):
@@ -384,7 +428,7 @@ def argMax(dictionary):
     values = [x[1] for x in items]
     maxIndex = values.index(max(values))
     return items[maxIndex][0]
-
+    
 
 def trainPerceptron(validLabels, iterations, trainingDataSet, featureNames):
     """Use the training data to get set values for the training weight vectors"""
@@ -397,9 +441,15 @@ def trainPerceptron(validLabels, iterations, trainingDataSet, featureNames):
 
     #Train for the specified number of iterations and update weight vector
     trainingData = trainingDataSet
+    #r = random.random()
+    r = 0.814011835135
+    #print r
+    for i in range(9): #9
+        random.shuffle(trainingData, lambda: r)
+    
+    #random.shuffle(trainingData)
     for iteration in range(iterations):
         print "Starting iteration ", iteration, "..."
-        random.shuffle(trainingData)
         for i in range(len(trainingData)):
             true_label = trainingData[i][1]
             data = trainingData[i][0]
@@ -426,6 +476,7 @@ def classifyPerceptron(data, weights, validLabels):
 
 
 def trainingStats(trainingGuesses, trainingDataSet):
+    """Print the number/percentage of correct guesses for the training data set"""
     i = 0
     correct = 0.0
     for datum in trainingDataSet:
@@ -444,32 +495,70 @@ def writeCSV(guesses):
     for i in range(len(guesses)):
         if guesses[i] == "Class_1":
             writeString = "\n"+str(i+1)+", 1, 0, 0, 0, 0, 0, 0, 0, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_2":
             writeString = "\n"+str(i+1)+", 0, 1, 0, 0, 0, 0, 0, 0, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_3":
             writeString = "\n"+str(i+1)+", 0, 0, 1, 0, 0, 0, 0, 0, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_4":
             writeString = "\n"+str(i+1)+", 0, 0, 0, 1, 0, 0, 0, 0, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_5":
             writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 1, 0, 0, 0, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_6":
             writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 1, 0, 0, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_7":
             writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 0, 1, 0, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_8":
             writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 0, 0, 1, 0"
-            fout.write(writeString)
         elif guesses[i] == "Class_9":
             writeString = "\n"+str(i+1)+", 0, 0, 0, 0, 0, 0, 0, 0, 1"
-            fout.write(writeString)
+        fout.write(writeString)
     fout.close()
+
+
+def findStats(data, features):
+    print "Getting statistics about data..."
+    validLabels = ['Class_1', 'Class_2', 'Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
+    stats = {}
+    triples = {} #
+    for l in validLabels:
+        triples[l] = [] #
+        stats[l] = {}
+        for feat in features:
+            stats[l][feat] = 0
+        stats[l]["count"] = 0
+    for datum in data:
+        label = datum[94]
+        i = 1
+        stats[label]["count"] += 1
+        while i < 94:
+            keyString = "feat_"+str(i)
+            stats[label][keyString] += datum[i]
+            i += 1
+
+
+    for j in range(3):
+        for key in stats:
+            maxKey = argMax(stats[key])
+            #print key, maxKey
+            triples[key].append(maxKey)
+            del stats[key][maxKey]
+    for lab in validLabels:
+        total = 0
+        for key in triples[lab]:
+            i = 1
+            intKey = key[5:]
+            intKey = int(intKey)
+            for datum in data:
+                total += datum[intKey]
+        print "The average sum of top three features for label   ", lab, "   is:", float(total)/stats[lab]["count"]
+                
+    
+def getDataSetFeatureNames(dataSet):
+    feats = []
+    d = dataSet[0][0]
+    for key in d:
+        feats.append(key)
+    return feats
         
 
 def classifierOptionsMenu():
@@ -481,7 +570,7 @@ def classifierOptionsMenu():
 
 def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
     """ Runs selcted calssifier"""
-    featureNames = getFeatureNames("train.csv")
+    featureNames = getDataSetFeatureNames(trainingDataSet)
     validLabels = ['Class_1', 'Class_2', 'Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
     if classifier.lower() == "knn":
         #TODO present options to user        
@@ -491,25 +580,34 @@ def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
         trainingWeights = trainPerceptron(validLabels, iterations, trainingDataSet, featureNames)
         trainingGuesses = classifyPerceptron(trainingDataSet, trainingWeights, validLabels)
         trainingStats(trainingGuesses, trainingDataSet)
-        testGuesses = classifyPerceptron(testDataSet, trainingWeights, validLabels)
-        writeCSV(testGuesses)
+        #testGuesses = classifyPerceptron(testDataSet, trainingWeights, validLabels)
+        #writeCSV(testGuesses)
 
         
 def main():
     "Select classifier to use and classify the data"
     trainingfile = "train.csv"
     testingfile = "test.csv"
-    featureNames = getFeatureNames("train.csv")
+    featureNames = getFeatureNames("train.csv")###############
     classifierOptionsMenu()
     classifier = raw_input("Which classifier would you like to use?  ")
+
+    engineeredFeatures = raw_input("Would you like to use engineered features only (no raw features)  (y/n)?  ")
+    noBasic = False
+    if engineeredFeatures.lower() == 'y' or engineeredFeatures.lower() == "yes":
+        noBasic = True
+
     print "Preprocessing data..."
     rawTrainingData = loadData(trainingfile)
     rawTestData = loadData(testingfile)
+    dataToInt(rawTrainingData)
+    dataToInt(rawTestData)
+
+    #findStats(rawTrainingData, featureNames)
+
     actualTrainingLabels = getLabels(rawTrainingData)
-    trainingDataSet = getDataSet(rawTrainingData, featureNames, actualTrainingLabels)
-    testDataSet = getTestData(rawTestData, featureNames)
-    dataToInts(testDataSet)
-    dataToInts(trainingDataSet)
+    trainingDataSet = getDataSet(rawTrainingData, featureNames, actualTrainingLabels, noBasic)
+    testDataSet = getTestData(rawTestData, featureNames, noBasic)
     runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet)
     
     
