@@ -326,6 +326,19 @@ def quickBullshitFix(row):
     """remove later"""
     print "this does nothing"
 
+
+def isStephenALizardPerson():
+    answer = raw_input("\nIs Stephen a lizard person? (y/n)  ")
+    if answer.lower() == 'y' or answer.lower() == "yes":
+        print "You are correct, Stephen is a lizard person."
+    elif answer.lower() == 'n' or answer.lower() == "no":
+        print "OH NO, THE LIZARD HAS CORRUPTED YOUR BRAIN. Stephen is in fact the most lizardy lizard person ever to have lived."
+        print "Let's see if you learned your lesson, I'll ask you again..."
+        isStephenALizardPerson()
+    else:
+        print "That was a bullshit response. Let's try again:"
+        isStephenALizardPerson()
+
         
 def is_number(s):
     try:
@@ -620,6 +633,7 @@ def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
         
 def main():
     "Select classifier to use and classify the data"
+    isStephenALizardPerson()
     trainingfile = "train.csv"
     testingfile = "test.csv"
     #trainingfile = "fakeTrain.csv"
