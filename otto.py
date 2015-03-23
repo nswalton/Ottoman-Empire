@@ -104,8 +104,8 @@ def extractFeatures(featureNames, datum, noBasic):
         if noBasic: break
         features[feat] = datum[idx]
         idx += 1
-    #features["sum"] = sumOfFeatures(datum)
-    topThreeSum(datum, features)
+    features["sum"] = sumOfFeatures(datum)
+    #topThreeSum(datum, features)
     return features
 
 
@@ -475,6 +475,39 @@ def classifyPerceptron(data, weights, validLabels):
     return guesses
 
 
+def classifyWithPerceptron(data, weights, validLabels):
+    """Classify with probabilities instead of binary outcome."""
+    print "Classifying data using the perceptron...(with probabilities)..."
+    guesses = []
+    for datum in data:
+        vectors = []
+        for l in validLabels:
+            vectors.append(crossProduct(weights[l], datum[0]))
+        guesses.append(vectors)
+    return guesses
+
+
+def writeGuesses(guesses):
+    """Takes a list of lists called guesses and writes a csv file with probabilites
+       Each list in the list of guesses contains the probability for each label (in order of class 1-9)"""
+    print "Writing CSV file with probabilities..."
+    fout = open("toSubmit.csv", 'w')
+    fout.write("id, Class_1, Class_2, Class_3, Class_4, Class_5, Class_6, Class_7, Class_8, Class_9")
+    for i in range(len(guesses)):
+        total = 0.0
+        for j in range(len(guesses[i])):
+            if guesses[i][j] > 0: total += float(guesses[i][j])
+        writeLine = '\n' + str(i+1) + ", "
+        for k in range(len(guesses[i])):
+            if guesses[i][k] > 0:
+                writeLine = writeLine + str(guesses[i][k]/float(total)) + ", "
+            else:
+                writeLine = writeLine + str(0) + ", "
+        #print writeLine[:-2]
+        fout.write(writeLine[:-2])
+    fout.close()
+
+
 def trainingStats(trainingGuesses, trainingDataSet):
     """Print the number/percentage of correct guesses for the training data set"""
     i = 0
@@ -535,7 +568,6 @@ def findStats(data, features):
             stats[label][keyString] += datum[i]
             i += 1
 
-
     for j in range(3):
         for key in stats:
             maxKey = argMax(stats[key])
@@ -578,17 +610,21 @@ def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
     elif classifier.lower() == "perceptron" or classifier.lower() == 'p':
         iterations = int(raw_input("How many iterations should be run?  "))
         trainingWeights = trainPerceptron(validLabels, iterations, trainingDataSet, featureNames)
-        trainingGuesses = classifyPerceptron(trainingDataSet, trainingWeights, validLabels)
-        trainingStats(trainingGuesses, trainingDataSet)
-        #testGuesses = classifyPerceptron(testDataSet, trainingWeights, validLabels)
-        #writeCSV(testGuesses)
+        trainingGuesses = classifyPerceptron(trainingDataSet, trainingWeights, validLabels)     #using binary outcomes 
+        trainingStats(trainingGuesses, trainingDataSet)     #using binary outcomes
+        #testGuesses = classifyPerceptron(testDataSet, trainingWeights, validLabels) #binary outcomes
+        #testGuesses = classifyWithPerceptron(testDataSet, trainingWeights, validLabels)     #for probabilities, not binary outcome
+        #writeGuesses(testGuesses)       #write probabilities, not binary
+        #writeCSV(testGuesses)  
 
         
 def main():
     "Select classifier to use and classify the data"
     trainingfile = "train.csv"
     testingfile = "test.csv"
-    featureNames = getFeatureNames("train.csv")###############
+    #trainingfile = "fakeTrain.csv"
+    #testingfile = "fakeTest.csv"
+    featureNames = getFeatureNames("train.csv")
     classifierOptionsMenu()
     classifier = raw_input("Which classifier would you like to use?  ")
 
@@ -603,7 +639,7 @@ def main():
     dataToInt(rawTrainingData)
     dataToInt(rawTestData)
 
-    #findStats(rawTrainingData, featureNames)
+    #findStats(rawTrainingData, featureNames)    #for printing out some statistics about the data set
 
     actualTrainingLabels = getLabels(rawTrainingData)
     trainingDataSet = getDataSet(rawTrainingData, featureNames, actualTrainingLabels, noBasic)
