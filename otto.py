@@ -4,6 +4,7 @@
 import csv
 import sys
 import random
+from collections import Counter
 
 def loadData(filename):
     "Load data from the CSV training and test files"
@@ -214,7 +215,7 @@ def oned_list(l):
     oned_list = []
     new = []
     
-    for i in range (0, l):
+    for i in range (1, l):
         oned_list.append(i)
         new = []
     return oned_list
@@ -279,40 +280,18 @@ def getknn(k, table, columns, columnToPredict,weighted,filename):
     DataTable = table[:]
     predictedClass = []
     for i in range(k):
+        print "running Knn " + str(i)
         NNs = getNearestNeighbors(k, instances[i], columns, DataTable,weighted)
-        avgs.append(NNs)
-        for NNs in avgs:
-            for NN in NNs:
-                tempclass = []
-                tempclass.append(NN[columnToPredict])
-                if tempclass.count("false") >= tempclass.count("true"):
-                    predictedClass.append("false")
-                else:
-                    predictedClass.append("true")
-    j = 0
-    TP = 0
-    FP = 0
-    TN = 0
-    FN = 0
-    for instance in instances:
-        actual_Class =  instance[columnToPredict]
-        predicted_Class = predictedClass[j]
-        j += 1
-        results.append(actual_Class)
-        results.append(predicted_Class)
-        if predicted_Class == actual_Class:
-            if predicted_Class == "True":
-                TP = TP + 1
-            else:
-                TN = TN + 1
-        else:
-            if predicted_Class == "True":
-                FP = FP +1
-            else:
-                FN = FN +1 
-    count = len(results)/2
-    accuracy =(TP+TN)/(count * 1.0)
-    return accuracy
+        tempclass = []
+        for NN in NNs:         
+            tempclass.append(NN[columnToPredict])
+        data = Counter(tempclass)
+        data.most_common()   # Returns all unique items and their counts
+        data.most_common(1)  # Returns the highest occurring item
+        instance = instances[i]
+        print instance[columnToPredict]
+        print  data.most_common(1)
+        
 
 
 def majorityVote(predictions,attr):
@@ -333,7 +312,8 @@ def majorityVote(predictions,attr):
 def getNearestNeighbors(k, instance, columns, dataTable,weighted):
     nearest = []
     orderedList = orderByNearestNeighbor(instance, columns, dataTable,weighted)
-    i = 1          
+    i = 1
+    print "finding Neighbor" + str(i)          
     while i <= k:
         nearest.append(orderedList[i])
         i += 1
@@ -342,17 +322,16 @@ def getNearestNeighbors(k, instance, columns, dataTable,weighted):
 
 def orderByNearestNeighbor(instance, columns, dataTable,weighted):
     distances = []
+    i=0
     for row in dataTable:
+        #print "ordering Neighbor " + str(i)
         if weighted != True:
             distances.append(getDistance(instance, row, columns,dataTable))
         else:
             distances.append(getWeightedDistance(instance, row, columns,dataTable))
+        i=i+1
     return [x for (y,x) in sorted(zip(distances,dataTable))]
 
-
-def quickBullshitFix(row):
-    """remove later"""
-    print "this does nothing"
 
 
 def isStephenALizardPerson():
@@ -388,19 +367,11 @@ def getDistance(x1, x2, columns,table):
     if x1 == x2:
         return 0.0
     else:
-        print x1
-        print x2
+        #print x1
+        #print x2
         sumSqr = 0.0
         for i in columns:
-            if is_number(str(x1[i])) == False:
-                print x1[i]
-                if x1[i] != x2[i]:
-                    sumSqr += 1.0
-            else:
-                totalVals = []
-                for row in table:
-                   totalVals.append(row[i])
-                sumSqr += ((float(x1[i]) - float(x2[i])) ** 2)/(float(max.totalVals-min.totalVals))     
+            sumSqr += (float(x1[i]) - float(x2[i])) ** 2    
     return sumSqr
 
 
@@ -643,9 +614,10 @@ def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
     """ Runs selcted calssifier"""
     featureNames = getDataSetFeatureNames(trainingDataSet)
     validLabels = ['Class_1', 'Class_2', 'Class_3', 'Class_4', 'Class_5', 'Class_6', 'Class_7', 'Class_8', 'Class_9']
+    trueTrainingDataSet = fixinTheDamnFormat(trainingfile)    
     if classifier.lower() == "knn":
         #TODO present options to user        
-        print(regularKNN(5,5,trainingDataSet,oned_list(93),94,"false",trainingfile))
+        print(regularKNN(10,10,trueTrainingDataSet,oned_list(93),94,"false",trainingfile))
     elif classifier.lower() == "perceptron" or classifier.lower() == 'p':
         iterations = int(raw_input("How many iterations should be run?  "))
         trainingWeights = trainPerceptron(validLabels, iterations, trainingDataSet, featureNames)
@@ -656,6 +628,10 @@ def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
         writeGuesses(testGuesses)       #write probabilities, not binary
         #writeCSV(testGuesses)  
 
+def fixinTheDamnFormat(filename):
+    table = read_csv(filename)
+    table.pop(0)
+    return table
         
 def main():
     "Select classifier to use and classify the data"
