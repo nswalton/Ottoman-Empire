@@ -73,27 +73,50 @@ def topThreeSum(datum, features):
     for i in range(3):
         total += max(tempDatum[1:-1])
         tempDatum.remove(max(tempDatum))
-    #features["topThree"] = total*0.1
-    if total < 25:
-        features['low'] = 1
-        features['lowmid'] = 0
-        features['highmid'] = 0
-        features['high'] = 0
-    elif total < 75:
-        features['low'] = 0
-        features['lowmid'] = 1
-        features['highmid'] = 0
-        features['high'] = 0
-    elif total < 190:
-        features['low'] = 0
-        features['lowmid'] = 0
-        features['highmid'] = 1
+    if total < 30:
+        features['low'] = 3
         features['high'] = 0
     else:
         features['low'] = 0
-        features['lowmid'] = 0
-        features['highmid'] = 0
-        features['high'] = 1
+        features['high'] = 3
+
+
+def totalFeaturesOn(datum, features):
+    i = 1
+    total = 0
+    while i < 94:
+        if datum[i] > 0:
+            total += 1
+        i += 1
+    features["num_feats"] = total
+
+
+def binaryFeats(datum, features):
+    i = 1
+    while i < 94:
+        strNum = str(datum[i])
+        featureName = "feat_" + str(i)
+        if datum[i] > 0:
+            features[featureName] = 1
+        else:
+            features[featureName] = 0
+        i += 1
+
+
+def stdDevFeats(datum, features):
+    means = [0.3866802418, 0.2630660332, 0.9014674036, 0.7790814183, 0.0710430201, 0.0256957238, 0.1937037396, 0.6624325285, 1.011296422, 0.2639063965, 1.2528685478, 0.1408739778, 0.4809787, 1.6966934936, 1.2843983322, 1.4134587414, 0.3661075019, 0.5754226058, 0.5516985035, 0.4715246129, 0.2040143508, 0.729968648, 0.1425223828, 2.6438798927, 1.5345195384, 0.5631080513, 0.6966126895, 0.2389702317, 0.2757684476, 0.1503119041, 0.14867966, 1.0437958564, 0.6965157245, 0.9464106791, 0.6662626459, 0.7090888523, 0.2636316623, 0.5821293513, 0.4855845373, 1.6530592456, 0.3034681147, 0.6980186819, 0.451145803, 0.5608293739, 0.2381298685, 0.6413749636, 0.2496687029, 1.5848928537, 0.3483144252, 0.3242832671, 0.0532984259, 0.2134845987, 0.4420634151, 2.0724651734, 0.3231196871, 0.3037751705, 0.3091082453, 0.6979701994, 0.3886033808, 1.029929862, 0.2397459517, 1.1875626232, 0.1685898057, 1.2567956301, 0.2222276092, 0.5717056143, 2.8976534471, 0.3929021623, 0.8111283493, 0.8927890365, 0.3192895698, 0.8587220014, 0.5910501309, 0.5798506739, 0.7268172856, 0.7484566405, 0.1241959986, 0.3664145577, 0.300446039, 0.6980671644, 0.0784608423, 0.1879828049, 0.496719351, 0.0707521251, 0.5323055044, 1.1285755842, 0.3935485956, 0.8749151556, 0.4577717444, 0.8124212159, 0.2649406897, 0.3801189437, 0.1261352985]
+
+    standardDevs = [1.5253172391, 1.2520632386, 2.9347941478, 2.7879820716, 0.4388988422, 0.215331727, 1.0300933268, 2.2557513489, 3.474794391, 1.0833310973, 3.0423079993, 0.5670841497, 2.0146812069, 3.1631860329, 3.8622051759, 2.2261447561, 1.4774241975, 1.3359740409, 4.6361071026, 1.4387150084, 0.6960444593, 1.4462086781, 0.7829728993, 4.6289772503, 2.3329746493, 1.7102910746, 2.8731983213, 0.8281051991, 1.9012784328, 1.6408663474, 0.8973472144, 2.4168291775, 1.3101914055, 3.3685947207, 3.197939512, 2.5550985997, 0.7569279525, 1.6025656903, 3.2982885192, 3.2997709389, 1.0856637108, 1.9611731739, 1.705999313, 1.3460790944, 2.5871104804, 2.3483403388, 1.4461909219, 2.5770506493, 1.3693685262, 1.7204559041, 0.5138160622, 1.0447799537, 2.0064692124, 4.1132853174, 0.9987349781, 1.9257901419, 1.0821390976, 3.9836894847, 2.5776716765, 3.0284444264, 1.0175451752, 2.6667206479, 0.9461508244, 3.4020523706, 0.7830456845, 1.3618631218, 4.9742815066, 1.761039449, 4.1110581687, 1.9413520475, 1.1624338258, 2.4116267192, 5.7831859212, 3.7577913024, 3.2000691863, 2.920014247, 0.9066139727, 2.7782942983, 1.2855589498, 2.245652536, 0.4612400393, 0.8362618701, 2.4349012725, 1.1514506945, 1.9004224367, 2.6815327467, 1.5754421335, 2.1154493486, 1.5273726512, 4.5977673188, 2.0456290274, 0.9823766451, 1.2017104421]
+    i = 1
+    while i < 94:
+        featureName = "feat__" + str(i)
+        if datum[i] == 0:
+            features[featureName] = 0
+        else:
+            value = 2 * abs((datum[i] - means[i-1])/float(standardDevs[i-1]))
+            features[featureName] = value
+        i += 1
+            
 
 
 def extractFeatures(featureNames, datum, noBasic):
@@ -104,7 +127,12 @@ def extractFeatures(featureNames, datum, noBasic):
         if noBasic: break
         features[feat] = datum[idx]
         idx += 1
-    features["sum"] = sumOfFeatures(datum)
+    #features["sum"] = sumOfFeatures(datum)
+    #topThreeSum(datum, features)
+
+    #binaryFeats(datum, features)
+    totalFeaturesOn(datum, features)
+    stdDevFeats(datum, features)
     #topThreeSum(datum, features)
     return features
 
@@ -456,8 +484,7 @@ def trainPerceptron(validLabels, iterations, trainingDataSet, featureNames):
     trainingData = trainingDataSet
     #r = random.random()
     r = 0.814011835135
-    #print r
-    for i in range(9): #9
+    for i in range(9): 
         random.shuffle(trainingData, lambda: r)
     
     #random.shuffle(trainingData)
@@ -516,7 +543,6 @@ def writeGuesses(guesses):
                 writeLine = writeLine + str(guesses[i][k]/float(total)) + ", "
             else:
                 writeLine = writeLine + str(0) + ", "
-        #print writeLine[:-2]
         fout.write(writeLine[:-2])
     fout.close()
 
@@ -626,14 +652,14 @@ def runSelectedClassifier(classifier,trainingDataSet,trainingfile, testDataSet):
         trainingGuesses = classifyPerceptron(trainingDataSet, trainingWeights, validLabels)     #using binary outcomes 
         trainingStats(trainingGuesses, trainingDataSet)     #using binary outcomes
         #testGuesses = classifyPerceptron(testDataSet, trainingWeights, validLabels) #binary outcomes
-        #testGuesses = classifyWithPerceptron(testDataSet, trainingWeights, validLabels)     #for probabilities, not binary outcome
-        #writeGuesses(testGuesses)       #write probabilities, not binary
+        testGuesses = classifyWithPerceptron(testDataSet, trainingWeights, validLabels)     #for probabilities, not binary outcome
+        writeGuesses(testGuesses)       #write probabilities, not binary
         #writeCSV(testGuesses)  
 
         
 def main():
     "Select classifier to use and classify the data"
-    isStephenALizardPerson()
+    #isStephenALizardPerson()
     trainingfile = "train.csv"
     testingfile = "test.csv"
     #trainingfile = "fakeTrain.csv"
